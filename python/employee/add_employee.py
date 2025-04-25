@@ -1,19 +1,13 @@
 import psycopg2
 from flask import Flask, jsonify, request
-<<<<<<< HEAD
-=======
-from datetime import datetime
-import os
->>>>>>> 50dd3cc25da3147c6034d57b12355bf1fa27adc0
 
 # Database connection information
 DB_CONFIG = {
-    "user": os.getenv("DB_USER", "postgres"),
-    "password": os.getenv("DB_PASSWORD", "postgres"),
-    "host": os.getenv("DB_HOST", "express-finance-db.c500oesmmplc.eu-north-1.rds.amazonaws.com"),
-    "port": os.getenv("DB_PORT", "5432"),
-    "database": os.getenv("DB_DATABASE", "postgres"),
-    "sslmode": "require"  # Ensures SSL is used if required
+    "user": "postgres",
+    "password":  "postgres",
+    "host": "localhost",
+    "port":"5432",
+    "database":  "postgres"
 }
 
 # Encryption key for XOR cipher
@@ -25,36 +19,24 @@ def get_db_connection():
     """
     Establish a connection to the PostgreSQL database
     """
-<<<<<<< HEAD
-    conn = psycopg2.connect(
-        user=DB_CONFIG["user"],
-        password=DB_CONFIG["password"],
-        host=DB_CONFIG["host"],
-        port=DB_CONFIG["port"],
-        database=DB_CONFIG["database"]
-    )
-    return conn
-
-def xor_encrypt(text):
-    """
-    Encrypt a string using XOR cipher
-    """
-    return ''.join(chr(ord(char) ^ ENCRYPTION_KEY) for char in text)
-=======
     try:
         conn = psycopg2.connect(
             user=DB_CONFIG["user"],
             password=DB_CONFIG["password"],
             host=DB_CONFIG["host"],
             port=DB_CONFIG["port"],
-            database=DB_CONFIG["database"],
-            sslmode=DB_CONFIG["sslmode"]
+            database=DB_CONFIG["database"]
         )
         return conn
     except psycopg2.Error as e:
         print("Database connection error:", e)
         return None
->>>>>>> 50dd3cc25da3147c6034d57b12355bf1fa27adc0
+
+def xor_encrypt(text):
+    """
+    Encrypt a string using XOR cipher
+    """
+    return ''.join(chr(ord(char) ^ ENCRYPTION_KEY) for char in text)
 
 def xor_decrypt(cipher_text):
     """
