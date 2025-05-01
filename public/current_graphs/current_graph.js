@@ -40,7 +40,7 @@ window.onload = async function () {
     
     
     async function updateTable(startDate, endDate) {
-        tableBody.innerHTML = ''; // Clear previous data
+        tableBody.innerHTML = ''; 
         const clientData = await fetchClientHours(startDate, endDate);
         
         let allHoursWorked = 0;
@@ -59,7 +59,7 @@ window.onload = async function () {
                     bValue = parseFloat(bValue);
                 }
     
-                // Handle string and number sorting
+                
                 if (typeof aValue === 'string' && typeof bValue === 'string') {
                     return isAscending 
                         ? aValue.localeCompare(bValue) 
@@ -70,11 +70,11 @@ window.onload = async function () {
             });
         };
     
-        // Dropdown element for sorting
+        
         const sortDropdown = document.getElementById('sortDropdown');
         let isAscending = true;
     
-        // Listen for changes in the dropdown
+        
         sortDropdown.addEventListener('change', () => {
             const column = sortDropdown.value;
             isAscending = !isAscending; // Toggle ascending/descending every time the dropdown is changed
@@ -154,7 +154,6 @@ window.onload = async function () {
             `;
             tableBody.appendChild(totalRow);
         
-            // Add event listeners for "View Details" buttons
             document.querySelectorAll('.detailButton').forEach(button => {
                 button.addEventListener('click', function () {
                     const clientName = this.getAttribute("data-client");
@@ -298,7 +297,7 @@ window.onload = async function () {
         
 
     function showClientToast(clientName, startDate, endDate) {
-        // Create overlay if it doesn't exist
+
         let overlay = document.getElementById("toast-overlay");
         if (!overlay) {
             overlay = document.createElement("div");
@@ -306,7 +305,7 @@ window.onload = async function () {
             document.body.appendChild(overlay);
         }
 
-        // Create toast container if it doesn't exist
+        
         let toastContainer = document.getElementById("toast-container");
         if (!toastContainer) {
             toastContainer = document.createElement("div");
@@ -314,7 +313,7 @@ window.onload = async function () {
             document.body.appendChild(toastContainer);
         }
 
-        // Create toast box
+        
         let toast = document.createElement("div");
         toast.className = "toast show";
         toast.innerHTML = `
@@ -337,14 +336,14 @@ window.onload = async function () {
         toastContainer.appendChild(toast);
         overlay.style.display = "block"; 
 
-        // Close modal on button click
+        
         toast.querySelector(".close-toast").addEventListener("click", function () {
             toast.classList.remove("show");
             overlay.style.display = "none"; 
             setTimeout(() => toast.remove(), 500); 
         });
 
-        // Close modal when clicking outside
+        
         overlay.addEventListener("click", function () {
             toast.classList.remove("show");
             overlay.style.display = "none";
@@ -355,25 +354,52 @@ window.onload = async function () {
             .then(response => response.json())
             .then(data => {
                 const tableBody = document.getElementById("toast-table-body");
-                for (let month in data) {
+            
+                const monthNames = {
+                    "01": "January",
+                    "02": "February",
+                    "03": "March",
+                    "04": "April",
+                    "05": "May",
+                    "06": "June",
+                    "07": "July",
+                    "08": "August",
+                    "09": "September",
+                    "10": "October",
+                    "11": "November",
+                    "12": "December"
+                };
+            
+                for (let fullMonth of Object.keys(data)) {
+                    const [year, monthNumber] = fullMonth.split("-"); // Split '2025-01' into ['2025', '01']
+                    const monthName = monthNames[monthNumber] || monthNumber; 
+            
+                    const totalHours = data[fullMonth]["Total Hours Worked"];
+                    const totalCost = parseFloat(data[fullMonth]["Total Cost"]).toFixed(2);
+                    const clientPayment = parseFloat(data[fullMonth]["Client Payment"]).toFixed(2);
+                    const profitLoss = parseFloat(data[fullMonth]["Profit/Loss %"]).toFixed(2);
+            
+                    const profitLossColor = profitLoss >= 0 ? "green" : "red";
+            
                     const row = document.createElement("tr");
                     row.innerHTML = `
-                        <td>${month}</td>
-                        <td>${data[month]["Total Hours Worked"]}</td>
-                        <td>${data[month]["Total Cost"]}</td>
-                        <td>${data[month]["Client Payment"]}</td>
-                        <td>${data[month]["Profit/Loss %"]}</td>
+                        <td>${monthName} ${year}</td>
+                        <td>${totalHours}</td>
+                        <td>£${totalCost}</td>
+                        <td>£${clientPayment}</td>
+                        <td style="color: ${profitLossColor};">${profitLoss}%</td>
                     `;
                     tableBody.appendChild(row);
                 }
             })
+            
             .catch(error => console.error('Error fetching data:', error));
     }
 
     // Load default data on page load
     updateTable(startOfYear, today);
 
-    // Fetch & update data when 'Generate Report' is clicked
+
     generateReportButton.addEventListener('click', () => {
         const selectedStartDate = startDateInput.value;
         const selectedEndDate = endDateInput.value;

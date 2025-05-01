@@ -34,11 +34,10 @@ def getEmployeeWorkYears(data):
             ORDER BY year DESC;
         """, (employee_id,))
 
-        # Fetch all results
-        years = [row[0] for row in cursor.fetchall()]  # Convert to list
+        years = [row[0] for row in cursor.fetchall()]  
 
         if years:
-            return jsonify({'work_years': years})  # Return list of years
+            return jsonify({'work_years': years}) 
         else:
             return jsonify({'error': 'No work records found for employee'}), 404
 
@@ -69,17 +68,16 @@ def get_client_hours_for_employee(data):
         client_hours = cursor.fetchall()
         print(client_hours)
 
-        # Decrypt company names
         decrypted_client_hours = [(xor_decrypt(company_name), total_hours) for company_name, total_hours in client_hours]
 
         if decrypted_client_hours:
-            return {'client_hours': decrypted_client_hours}  # Return a dictionary, not jsonify()
+            return {'client_hours': decrypted_client_hours}  
         else:
             return {'error': 'No client hours found for employee'}
 
     except Exception as e:
         print("Error fetching data:", e)
-        return {'error': 'Internal Server Error'}  # Return a dictionary
+        return {'error': 'Internal Server Error'}  
     
     finally:
         if conn:
@@ -93,7 +91,7 @@ def get_individual_monthly_report(data):
         year = data.get('year')
         company_name = data.get('company_name')
 
-        encrypted_company_name = xor_encrypt(company_name)  # Encrypt the company name
+        encrypted_company_name = xor_encrypt(company_name)  
         print("Reached get_individual_monthly_report")
 
         cursor.execute("""
@@ -111,26 +109,24 @@ def get_individual_monthly_report(data):
         monthly_report = cursor.fetchall()
         print(monthly_report)
 
-        # List of month names
         month_names = [
             "January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"
         ]
         
-        # Prepare a dictionary to map month names to their respective hours
         report_data = []
         for month, total_hours in monthly_report:
-            month_name = month_names[int(month) - 1]  # Convert month number to month name
+            month_name = month_names[int(month) - 1]  
             report_data.append({ 'month': month_name, 'total_hours': total_hours })
 
         if report_data:
-            return {'monthly_report': report_data}  # Return the structured report
+            return {'monthly_report': report_data}  
         else:
             return {'error': 'No monthly report found for employee'}
 
     except Exception as e:
         print("Error fetching data:", e)
-        return {'error': 'Internal Server Error'}  # Return a dictionary
+        return {'error': 'Internal Server Error'}  
     
     finally:
         if conn:
@@ -163,16 +159,13 @@ def get_monthly_chart(data):
         if not monthly_data:
             return {'error': 'No monthly chart data found for employee'}
 
-        # List of month names
         month_names = [
             "January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"
         ]
         
-        # Prepare a dictionary to map month names to their respective hours
         chart_data = []
         for month, total_hours in monthly_data:
-            # Check if month is a valid integer between 1 and 12
             if 1 <= int(month) <= 12:
                 month_name = month_names[int(month) - 1]  # Convert month number to month name
                 chart_data.append({'month': month_name, 'total_hours': total_hours})
@@ -184,7 +177,7 @@ def get_monthly_chart(data):
         
     except Exception as e:
         print("Error fetching data:", e)
-        return {'error': 'Internal Server Error'}  # Return a dictionary
+        return {'error': 'Internal Server Error'}  
     
     finally:
         if conn:

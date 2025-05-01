@@ -33,13 +33,9 @@ def get_client_hours():
     end_date = request.args.get('end_date')
 
     try:
-        # Step 1: Fetch all necessary data from the database
         rows = fetch_client_data(start_date, end_date)
-        # Step 2: Process the data and calculate totals
         client_data = process_client_data(rows)
-        # Step 3: Calculate profit/loss for each client
         client_data = calculate_profit_loss(client_data, start_date, end_date)
-        # Step 4: Prepare final data for the response
         response_data = prepare_final_data(client_data)
 
         return jsonify(response_data)
@@ -59,7 +55,7 @@ def get_monthly_report():
 
     try:
         response_data = fetch_monthly_report(client, start_date, end_date)
-        return response_data  # Assuming response_data is already a JSON response
+        return response_data  
 
     except Exception as e:
         print(f"Error fetching or processing data: {e}")
@@ -68,7 +64,7 @@ def get_monthly_report():
 
 @app.route('/submitTimesheet', methods=['POST'])
 def submit_timesheet_route():
-    return submit_timesheet()  # Call function from timesheet.py
+    return submit_timesheet()  
 
 
 @app.route('/add_new_employee', methods=['POST'])
@@ -88,7 +84,7 @@ def get_all_employees():
 @app.route('/update_employee', methods=['POST'])
 def save_update_employee():
     print("reached app.py")
-    data = request.get_json()  # Get the JSON data sent from the client
+    data = request.get_json()  
     print("Received data:", data)
     
     try:
@@ -129,8 +125,8 @@ def get_hours_for_client():
     print("Received data:", data)
 
     try:
-        response_data = get_client_hours_for_employee(data)  # Call function correctly
-        return jsonify(response_data)  # Ensure correct response format
+        response_data = get_client_hours_for_employee(data)  
+        return jsonify(response_data)  
     except Exception as e:
         print(f"Error fetching data: {e}")
         return jsonify({'error': 'Error fetching data'}), 500
@@ -141,8 +137,8 @@ def get_individual_report_monthly_details():
     print("Received data:", data)
 
     try:
-        response_data = get_individual_monthly_report(data)  # Call function correctly
-        return jsonify(response_data)  # Ensure correct response format
+        response_data = get_individual_monthly_report(data)  
+        return jsonify(response_data)  
     except Exception as e:
         print(f"Error fetching data: {e}")
         return jsonify({'error': 'Error fetching data'}), 500
@@ -154,8 +150,8 @@ def monthly_individual_chart():
     print("Received data:", data)
 
     try:
-        response_data = get_monthly_chart(data)  # Call function correctly
-        return jsonify(response_data)  # Ensure correct response format
+        response_data = get_monthly_chart(data)  
+        return jsonify(response_data)  
     except Exception as e:
         print(f"Error fetching data: {e}")
         return jsonify({'error': 'Error fetching data'}), 500
@@ -191,8 +187,8 @@ def call_update_client():
 def get_employee_ids():
 
     try:
-        response_data = getEmployeeIDs()  # Call function correctly
-        return jsonify(response_data)  # Ensure correct response format
+        response_data = getEmployeeIDs()  
+        return jsonify(response_data)  
     except Exception as e:
         print(f"Error fetching data: {e}")
         return jsonify({'error': 'Error fetching data'}), 500
@@ -226,29 +222,32 @@ def get_employee_info():
     print("Received data:", data)
 
     try:
-        response_data = get_individual_employee(data)  # Call function correctly
-        return jsonify(response_data)  # Ensure correct response format
+        response_data = get_individual_employee(data)  
+        return jsonify(response_data)  
     except Exception as e:
         print(f"Error fetching data: {e}")
         return jsonify({'error': 'Error fetching data'}), 500
-
 
 @app.route('/predicted_reports', methods=['POST'])
 def predictive_report_call():
     print("Reached App.py for predictive reports")
 
     try:
-        response_data = get_employee_client_hours_with_wages()  
+        data = request.get_json()
+        months = int(data.get('months', 12))  
+
+        response_data = get_employee_client_hours_with_wages(months)  
         return jsonify(response_data) 
     except Exception as e:
         print(f"Error fetching data: {e}")
         return jsonify({'error': 'Error fetching data'}), 500
+
     
 @app.route('/getClientPaySchedules', methods=['POST'])
 def get_client_pay_schedules():
     try:
         response_data = fetch_client_payments()
-        return jsonify(response_data)  # do jsonify here
+        return jsonify(response_data)  
     except Exception as e:
         print(f"Error fetching data: {e}")
         return jsonify({'error': 'Error fetching data'}), 500

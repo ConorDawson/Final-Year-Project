@@ -2,7 +2,6 @@ const express = require('express');
 const pool = require('../db/pool');
 const router = express.Router();
 
-// Get all timesheets
 router.get('/', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM timesheets');
@@ -13,7 +12,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Insert a timesheet
 router.post('/', async (req, res) => {
   const { user_id, client_id, hours, date } = req.body;
 

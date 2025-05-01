@@ -31,9 +31,9 @@ def getEmployees():
         response = [
             {
                 "employee_id": emp[0],
-                "email": xor_decrypt(emp[1]),  # Decrypting email
-                "employee_forename": xor_decrypt(emp[3]),  # Decrypting forename
-                "employee_surname": xor_decrypt(emp[4]),  # Decrypting surname
+                "email": xor_decrypt(emp[1]), 
+                "employee_forename": xor_decrypt(emp[3]),  
+                "employee_surname": xor_decrypt(emp[4]),  
                 "role": emp[5],
                 "wage": emp[6]
             }

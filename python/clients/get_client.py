@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 from datetime import datetime
 from python.database import get_db_connection
 
-app = Flask(__name__)  # Define the Flask app
+app = Flask(__name__)  
 
 # XOR decryption key
 ENCRYPTION_KEY = 5
@@ -30,7 +30,6 @@ def getClients():
         clients = cursor.fetchall()
         conn.close()
 
-        # Decrypt and format response
         response = [
             {
                 "client_id": client[0],
@@ -39,7 +38,7 @@ def getClients():
                 "client_payment_amount": client[3],
                 "contact_person": xor_decrypt(client[4]),
                 "email": xor_decrypt(client[5]),
-                "phone_number": xor_decrypt(client[6]),  # Remove xor_decrypt if not encrypted
+                "phone_number": xor_decrypt(client[6]),  
                 "city": xor_decrypt(client[7]),
                 "country": xor_decrypt(client[8])
             }

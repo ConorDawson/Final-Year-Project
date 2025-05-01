@@ -3,7 +3,6 @@ from flask import Flask, jsonify, request
 from psycopg2.extras import execute_values
 import os
 
-
 # Encryption key
 ENCRYPTION_KEY = 5
 
@@ -14,17 +13,33 @@ def xor_encrypt(text):
 def xor_decrypt(cipher_text):
     return ''.join(chr(ord(char) ^ ENCRYPTION_KEY) for char in cipher_text)
 
-# Database connection info
+# Database connection configuration
 DB_CONFIG = {
-    "user": os.getenv("DB_USER", "postgres"),
-    "password": os.getenv("DB_PASSWORD", "postgres"),
-    "host": os.getenv("DB_HOST", "express-finance-db.c500oesmmplc.eu-north-1.rds.amazonaws.com"),
-    "port": os.getenv("DB_PORT", "5432"),
-    "database": os.getenv("DB_DATABASE", "postgres"),
-    "sslmode": "require"  # Ensures SSL is used if required
+    'user': 'postgres',
+    'password': 'postgres',
+    'host': 'localhost',
+    'port': '5432',
+    'database': 'postgres'
 }
 
 app = Flask(__name__)
+
+def get_db_connection():
+    """
+    Establish a connection to the PostgreSQL database
+    """
+    try:
+        conn = psycopg2.connect(
+            user=DB_CONFIG["user"],
+            password=DB_CONFIG["password"],
+            host=DB_CONFIG["host"],
+            port=DB_CONFIG["port"],
+            database=DB_CONFIG["database"]
+        )
+        return conn
+    except psycopg2.Error as e:
+        print("Database connection error:", e)
+        return None
 
 @app.route('/submit-timesheet', methods=['POST'])
 def submit_timesheet():
@@ -42,7 +57,10 @@ def submit_timesheet():
     """
 
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
+        conn = get_db_connection()
+        if conn is None:
+            return jsonify({"error": "Failed to connect to the database"}), 500
+
         cur = conn.cursor()
 
         # Encrypt the company names

@@ -1,8 +1,8 @@
 window.onload = function () {
     console.log('add_client.js loaded');
     
-    const form = document.getElementById("addClient"); // Select the form
-    console.log(form); // Check if form is selected
+    const form = document.getElementById("addClient");
+    console.log(form);
 
     if (form) {
         form.addEventListener("submit", async function (event) {
@@ -33,7 +33,6 @@ window.onload = function () {
             }
             const formattedPaymentAmount = paymentAmount.toFixed(2); // Ensure 2 decimal places
 
-            // Create data object to send
             const clientData = {
                 company_name: companyName,
                 contact_person: contactPerson,

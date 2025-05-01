@@ -1,29 +1,28 @@
+let paySchedulesData = [];
 window.onload = async function () {
     console.log("Predicted Report JS Loaded");
 
     try {
-        const clientData = await getPredictedReports();
+        // Initially load data and build the table and charts
+        const clientData = await getPredictedReports(12); // Default to 12 months
         const grouped = groupMonthlyClientData(clientData);
         const yearly = groupYearlyData(grouped);
         const paySchedules = await getPaySchedules();
+        paySchedulesData = paySchedules;
 
         console.log("Grouped Client Data:", grouped);
         console.log("Yearly Data:", yearly);
         console.log("Pay Schedules:", paySchedules);
 
         buildYearlyTable(yearly, paySchedules);
-        createPieChart(yearly);       // Yearly cost breakdown
-        createLineChart(grouped);     // Monthly hours
+        createPieChart(yearly);      
+        createLineChart(grouped);     
         monthlyGroupedData = groupMonthlyClientData(clientData);
-
 
     } catch (error) {
         console.error("Error during data fetching and table creation:", error);
     }
 
-
-    
-    // Download main table as CSV
     document.getElementById('downloadReport').addEventListener('click', () => {
         const table = document.getElementById('reportTable');
         const rows = Array.from(table.rows).map(row => Array.from(row.cells).map(cell => cell.innerText));
@@ -41,20 +40,49 @@ window.onload = async function () {
         link.click();
         document.body.removeChild(link);
     });
+
+    document.getElementById('loadingScreen').style.display = 'none';
+
+    document.getElementById('generateReport').addEventListener('click', async function() {
+        // Show the loading screen
+        document.getElementById('loadingScreen').style.display = 'block';
+
+        const dropdown = document.getElementById('monthsDropdown');
+        const selectedValue = dropdown.value;
+        console.log('Selected months:', selectedValue);
+
+        try {
+            // Fetch the new predicted reports based on selected months
+            const clientData = await getPredictedReports(selectedValue); 
+            const grouped = groupMonthlyClientData(clientData);
+            const yearly = groupYearlyData(grouped);
+            const paySchedules = await getPaySchedules();
+
+            buildYearlyTable(yearly, paySchedules);
+            createPieChart(yearly);       
+            createLineChart(grouped);     
+
+            document.getElementById('loadingScreen').style.display = 'none';
+
+        } catch (error) {
+            console.error("Error generating the report:", error);
+            document.getElementById('loadingScreen').style.display = 'none';
+        }
+    });
 };
 
-function getPredictedReports() {
+function getPredictedReports(selectedMonths) {
     console.log("Fetching predicted reports...");
-
-    return axios.post('/predicted_reports', {})
-        .then(response => {
-            console.log("Predicted reports response:", response.data);
-            return response.data;
-        })
-        .catch(error => {
-            console.error("Error fetching predicted reports:", error);
-            return [];
-        });
+  
+    return axios.post('/predicted_reports', { months: selectedMonths }) // Pass selected months dynamically
+      .then(response => {
+        console.log("Predicted reports response:", response.data);
+        return response.data;
+      })
+      .catch(error => {
+        console.error("Error fetching predicted reports:", error);
+        return [];
+      });
 }
 
 function groupMonthlyClientData(data) {
@@ -88,7 +116,6 @@ function groupMonthlyClientData(data) {
         return a.Client.localeCompare(b.Client);
     });
 }
-
 
 function groupYearlyData(data) {
     const yearlyGrouped = {};
@@ -129,42 +156,98 @@ function getPaySchedules() {
 
 function buildYearlyTable(yearlyData, paySchedules) {
     const tableBody = document.getElementById("reportTableBody");
-    tableBody.innerHTML = ""; // Clear existing rows
+    tableBody.innerHTML = ""; 
+
+    let allHoursWorked = 0;
+    let totalCost = 0;
+    let totalClientPayment = 0;
+
+    const dropdown = document.getElementById('monthsDropdown');
+    const selectedValue = dropdown.value; 
 
     yearlyData.forEach(clientYear => {
         const clientName = clientYear["Client"];
-        const hours = clientYear["Total Hours Worked"];
-        const cost = clientYear["Total Cost (£)"];
+        const hours = parseFloat(clientYear["Total Hours Worked"]) || 0;
+        const cost = parseFloat(clientYear["Total Cost (£)"]) || 0;
 
-        // Find matching payment data
         const payData = paySchedules.find(p => p.company_name === clientName);
-        const payment = payData ? parseFloat(payData.client_payment_amount) : 0;
+        let payment = 0;
+        if (payData) {
+            const paymentAmount = parseFloat(payData.client_payment_amount) || 0;
+            const billingSchedule = payData.client_billing_schedule;
 
-        const profitLoss = cost > 0 ? ((payment - cost) / cost) * 100 : 0;
+            // Calculate the monthly payment based on the billing schedule
+            switch (billingSchedule) {
+                case 'A': // Annual
+                    payment = paymentAmount / 12;
+                    break;
+                case 'BA': // Bi-Annual
+                    payment = paymentAmount / 6;
+                    break;
+                case 'Q': // Quarterly
+                    payment = paymentAmount / 3;
+                    break;
+                case 'M': // Monthly
+                    payment = paymentAmount;
+                    break;
+                default:
+                    payment = 0;
+            }
+        }
+
+        const adjustedPayment = payment * selectedValue;
+
+        allHoursWorked += hours;
+        totalCost += cost;
+        totalClientPayment += adjustedPayment;
+
+        const profitLoss = cost > 0 ? ((adjustedPayment - cost) / cost) * 100 : 0;
+        const profitLossSign = profitLoss > 0 ? '↑' : profitLoss < 0 ? '↓' : '';
+        const profitLossColor = profitLoss > 0 ? 'green' : profitLoss < 0 ? 'red' : 'black';
+        const profitLossStyle = `color: ${profitLossColor}; font-weight: bold;`;
 
         const row = document.createElement("tr");
-
         row.innerHTML = `
-            <td>${clientName}</td>
+            <td class="clientName"><strong>${clientName}</strong></td>
             <td>${hours.toFixed(2)}</td>
             <td>£${cost.toFixed(2)}</td>
-            <td>£${payment.toFixed(2)}</td>
-            <td>${profitLoss.toFixed(2)}%</td>
-            <td><button onclick="monthlyToast('${clientName}')">View</button></td>
+            <td>£${adjustedPayment.toFixed(2)}</td> <!-- Updated to show adjusted payment -->
+            <td style="${profitLossStyle}">${profitLoss.toFixed(2)}% ${profitLossSign}</td>
+            <td><button onclick="monthlyToast('${clientName}')"><i class="fa-solid fa-circle-info"></i></button></td>
         `;
 
         tableBody.appendChild(row);
     });
-}
 
+    const totalProfitLoss = totalCost > 0 ? ((totalClientPayment - totalCost) / totalCost) * 100 : 0;
+    const totalProfitLossSign = totalProfitLoss > 0 ? '↑' : totalProfitLoss < 0 ? '↓' : '';
+    const totalProfitLossColor = totalProfitLoss > 0 ? 'green' : totalProfitLoss < 0 ? 'red' : 'black';
+    const totalProfitLossStyle = `color: ${totalProfitLossColor}; font-weight: bold;`;
+
+    const totalRow = document.createElement("tr");
+    totalRow.innerHTML = `
+        <td><strong>Total</strong></td>
+        <td><strong>${allHoursWorked.toFixed(2)}</strong></td>
+        <td><strong>£${totalCost.toFixed(2)}</strong></td>
+        <td><strong>£${totalClientPayment.toFixed(2)}</strong></td>
+        <td style="${totalProfitLossStyle}"><strong>${totalProfitLoss.toFixed(2)}% ${totalProfitLossSign}</strong></td>
+        <td></td>
+    `;
+
+    tableBody.appendChild(totalRow);
+}
 
 function createPieChart(yearlyData) {
     const ctx = document.getElementById("costChart").getContext("2d");
 
+    if (window.costChartInstance) {
+        window.costChartInstance.destroy();
+    }
+
     const labels = yearlyData.map(item => item.Client);
     const data = yearlyData.map(item => item["Total Cost (£)"]);
 
-    new Chart(ctx, {
+    window.costChartInstance = new Chart(ctx, {
         type: 'pie',
         data: {
             labels: labels,
@@ -188,6 +271,12 @@ function createPieChart(yearlyData) {
     });
 }
 function createLineChart(groupedData) {
+    const ctx = document.getElementById('profitLossChart').getContext('2d');
+
+    if (window.lineChartInstance) {
+        window.lineChartInstance.destroy();
+    }
+
     const monthsSet = new Set();
     const clientMap = {};
     let minVal = Infinity;
@@ -223,13 +312,10 @@ function createLineChart(groupedData) {
         };
     });
 
-    // Add padding to min and max
     const yMin = Math.floor(minVal - 1);
     const yMax = Math.ceil(maxVal + 1);
 
-    const ctx = document.getElementById('profitLossChart').getContext('2d');
-
-    new Chart(ctx, {
+    window.lineChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
             labels: allMonths,
@@ -253,42 +339,70 @@ function createLineChart(groupedData) {
         }
     });
 
-
     console.log("Line chart months:", allMonths);
-console.log("Line chart datasets:", datasets);
-
+    console.log("Line chart datasets:", datasets);
 }
-
 
 function monthlyToast(clientName) {
     console.log("Client:", clientName);
 
-    // Filter entries for the selected client
+    const payData = paySchedulesData.find(p => p.company_name === clientName);
+    let monthlyPayment = 0;
+
+    if (payData) {
+        const billingSchedule = payData.client_billing_schedule;
+        const paymentAmount = parseFloat(payData.client_payment_amount) || 0;
+
+        switch (billingSchedule) {
+            case 'A': // Annual
+                monthlyPayment = paymentAmount / 12;
+                break;
+            case 'BA': // Bi-Annual
+                monthlyPayment = paymentAmount / 6;
+                break;
+            case 'Q': // Quarterly
+                monthlyPayment = paymentAmount / 3;
+                break;
+            case 'M': // Monthly
+                monthlyPayment = paymentAmount;
+                break;
+            default:
+                monthlyPayment = 0;
+        }
+    }
+
     const clientEntries = monthlyGroupedData.filter(entry => entry.Client === clientName);
 
     if (clientEntries.length === 0) {
         document.getElementById("modalTitle").innerText = `${clientName}`;
         document.getElementById("modalBody").innerHTML = `<p>No data available for this client.</p>`;
     } else {
-        // Set modal title
         document.getElementById("modalTitle").innerText = `${clientName} - Monthly Breakdown`;
 
-        // Build HTML for body
         let bodyHtml = `<table style="width: 100%; border-collapse: collapse;">`;
         bodyHtml += `
             <tr>
                 <th style="border-bottom: 1px solid #ccc; text-align: left;">Month</th>
                 <th style="border-bottom: 1px solid #ccc; text-align: left;">Hours Worked</th>
                 <th style="border-bottom: 1px solid #ccc; text-align: left;">Cost (£)</th>
+                <th style="border-bottom: 1px solid #ccc; text-align: left;">Monthly Payment (£)</th>
+                <th style="border-bottom: 1px solid #ccc; text-align: left;">Profit/Loss (£)</th>
             </tr>
         `;
 
         clientEntries.forEach(entry => {
+            const totalCost = entry["Total Cost (£)"];
+            const profitLoss = monthlyPayment - totalCost;
+
             bodyHtml += `
                 <tr>
                     <td>${entry.Month}</td>
                     <td>${entry["Total Hours Worked"].toFixed(2)}</td>
-                    <td>£${entry["Total Cost (£)"].toFixed(2)}</td>
+                    <td>£${totalCost.toFixed(2)}</td>
+                    <td>£${monthlyPayment.toFixed(2)}</td>
+                    <td style="color: ${profitLoss >= 0 ? 'green' : 'red'};">
+                        £${profitLoss.toFixed(2)}
+                    </td>
                 </tr>
             `;
         });
@@ -297,7 +411,6 @@ function monthlyToast(clientName) {
         document.getElementById("modalBody").innerHTML = bodyHtml;
     }
 
-    // Show the toast/modal
     document.getElementById("t").style.display = "block";
 }
 

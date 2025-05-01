@@ -53,8 +53,8 @@ def add_new_employee():
     encrypted_surname = xor_encrypt(data['employee_surname'])
     encrypted_email = xor_encrypt(data['employee_email'])
     encrypted_password = xor_encrypt(data['employee_password'])
-    role = data['employee_role']  # Not encrypted
-    employee_wage = data['employee_wage']  # Not encrypted
+    role = data['employee_role']  
+    employee_wage = data['employee_wage']  
 
     try:
         conn = get_db_connection()

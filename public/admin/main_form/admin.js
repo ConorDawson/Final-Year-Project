@@ -63,12 +63,10 @@ function populateEmployeeTable(employees) {
         table.appendChild(row);
     });
 
-    // Attach event listeners to update buttons
     document.querySelectorAll('.update-btn').forEach(button => {
         button.addEventListener('click', openUpdateToast);
     });
 
-    // Attach event listeners to delete buttons
     document.querySelectorAll('.delete-btn').forEach(button => {
         button.addEventListener('click', deleteEmployee);
     });
@@ -85,7 +83,7 @@ function openUpdateToast(event) {
     document.getElementById('employeeRole').value = button.dataset.role;
     document.getElementById('employeeWage').value = button.dataset.wage;
 
-    // Show toast
+    
     document.getElementById('t').style.display = 'block';
 
 }
@@ -147,7 +145,6 @@ async function deleteEmployee(event) {
     }
 }
 
-// Close toast on cancel
 document.getElementById('closeToast').addEventListener('click', () => {
     document.getElementById('t').style.display = 'none';
 });
@@ -208,14 +205,12 @@ function populateClientTable(clients) {
         table.appendChild(row);
     });
 
-    // Attach event listeners to update buttons
-   // Corrected event listener attachment
+   
 document.querySelectorAll('.update-client').forEach(button => {
     button.addEventListener('click', openUpdateClientToast);
 });
 
 
-    // Attach event listeners to delete buttons
     document.querySelectorAll('.delete-client-btn').forEach(button => {
         button.addEventListener('click', deleteClient);
     });
@@ -252,11 +247,11 @@ function openUpdateClientToast(event) {
     // Fill form with client data
     document.getElementById('clientId').value = button.dataset.id;
     document.getElementById('companyName').value = button.dataset.company_name;
-    document.getElementById('contactPerson').value = button.dataset.contact_person;  // New field
-    document.getElementById('email').value = button.dataset.email;  // New field
-    document.getElementById('phoneNumber').value = button.dataset.phone_number;  // New field
-    document.getElementById('city').value = button.dataset.city;  // New field
-    document.getElementById('country').value = button.dataset.country;  // New field
+    document.getElementById('contactPerson').value = button.dataset.contact_person;  
+    document.getElementById('email').value = button.dataset.email; 
+    document.getElementById('phoneNumber').value = button.dataset.phone_number;  
+    document.getElementById('city').value = button.dataset.city;  
+    document.getElementById('country').value = button.dataset.country;  
     document.getElementById('clientPaymentAmount').value = button.dataset.payment_amount;
     document.getElementById('clientBillingSchedule').value = button.dataset.billing_schedule;
 
@@ -272,11 +267,11 @@ async function updateClient() {
         company_name: document.getElementById('companyName').value,
         client_billing_schedule: document.getElementById('clientBillingSchedule').value,
         client_payment_amount: document.getElementById('clientPaymentAmount').value,
-        contact_person: document.getElementById('contactPerson').value,  // New field
-        email: document.getElementById('email').value,  // New field
-        phone_number: document.getElementById('phoneNumber').value,  // New field
-        city: document.getElementById('city').value,  // New field
-        country: document.getElementById('country').value  // New field
+        contact_person: document.getElementById('contactPerson').value,  
+        email: document.getElementById('email').value,  
+        phone_number: document.getElementById('phoneNumber').value, 
+        city: document.getElementById('city').value, 
+        country: document.getElementById('country').value  
     };
 
     try {
@@ -300,12 +295,11 @@ async function updateClient() {
     }
 }
 
-// Close toast on cancel or close button click
+
 document.getElementById('closeClientToast').addEventListener('click', () => {
     document.getElementById('clientToast').style.display = 'none';
 });
 
-// Add event listener for the update button
 document.getElementById('updateClientBtn').addEventListener('click', updateClient);
 
 

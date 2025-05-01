@@ -6,7 +6,6 @@ import os
 import psycopg2
 from flask import Flask, jsonify, request
 
-# Database connection information
 DB_CONFIG = {
     "user": "postgres",
     "password":  "postgres",
@@ -65,14 +64,13 @@ def fetch_client_data(start_date, end_date):
     
     with psycopg2.connect(**DB_CONFIG) as conn:
         with conn.cursor() as cursor:
-            cursor.execute(query, (start_date, end_date))  # Safe parameterized query
+            cursor.execute(query, (start_date, end_date))  
             rows = cursor.fetchall()
 
-    # Decrypt company names
     decrypted_rows = []
     for row in rows:
         decrypted_row = list(row)
-        decrypted_row[0] = xor_decrypt(decrypted_row[0])  # Decrypt company_name
+        decrypted_row[0] = xor_decrypt(decrypted_row[0])  
         decrypted_rows.append(tuple(decrypted_row))
 
     return decrypted_rows
@@ -85,7 +83,6 @@ def process_client_data(rows):
     for row in rows:
         company_name, hours, employee_wage, client_payment, work_date, billing_schedule = row
         
-        # Check for None values and assign default values if necessary
         hours = hours if hours is not None else 0
         employee_wage = employee_wage if employee_wage is not None else 0
         client_payment = client_payment if client_payment is not None else 0
@@ -98,7 +95,6 @@ def process_client_data(rows):
                 'billing_schedule': billing_schedule
             }
 
-        # Accumulate the hours and cost for each client
         client_data[company_name]['total_hours'] += hours
         client_data[company_name]['total_cost'] += hours * employee_wage
     
@@ -121,13 +117,13 @@ def calculate_profit_loss(client_data, start_date, end_date):
         total_payment = 0
 
         # Determine number of billing cycles in the selected period
-        if billing_schedule == 'A':  # Paid once per 12 months
+        if billing_schedule == 'A':  
             billing_cycles = months_selected // 12
-        elif billing_schedule == 'BA':  # Paid every 6 months
+        elif billing_schedule == 'BA':  
             billing_cycles = months_selected // 6
-        elif billing_schedule == 'Q':  # Paid every 3 months
+        elif billing_schedule == 'Q':  
             billing_cycles = months_selected // 3
-        elif billing_schedule == 'M':  # Paid every month
+        elif billing_schedule == 'M':  
             billing_cycles = months_selected
         else:
             billing_cycles = 0  # Default if an unknown schedule appears

@@ -13,14 +13,11 @@ def get_individual_employee(data):
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # Retrieve employee ID from request data
         id = data.get('id')
 
-        # Validate input
         if not id:
             return {'error': 'Missing employee ID'}
 
-        # Correct SQL query
         query = """
             SELECT users.employee_forename, users.employee_surname, users.email, users.role, employee_pay.employee_wage
             FROM users
@@ -37,7 +34,7 @@ def get_individual_employee(data):
             for forename, surname, email, role, wage in employee_data
         ]
 
-        return {'employee_data': decrypted_employee_data}  # ✅ Returning a dictionary instead of jsonify()
+        return {'employee_data': decrypted_employee_data}  
     
     except Exception as e:
         print("Error fetching data:", e)

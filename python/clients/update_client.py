@@ -23,15 +23,14 @@ def xor_decrypt(cipher_text):
 def update_client():
     data = request.get_json()
 
-    # Encrypt the updated client data
     encrypted_company_name = xor_encrypt(data['company_name'])
     encrypted_contact_person = xor_encrypt(data['contact_person'])
     encrypted_email = xor_encrypt(data['email'])
     encrypted_phone_number = xor_encrypt(data['phone_number'])
     encrypted_city = xor_encrypt(data['city'])
     encrypted_country = xor_encrypt(data['country'])
-    client_payment_amount = data['client_payment_amount']  # Not encrypted
-    client_billing_schedule = data['client_billing_schedule']  # Not encrypted
+    client_payment_amount = data['client_payment_amount']  
+    client_billing_schedule = data['client_billing_schedule']  
     client_id = data['client_id']
 
     try:

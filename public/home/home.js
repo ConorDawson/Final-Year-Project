@@ -1,21 +1,14 @@
-
 let currentWeekStartDate = new Date();
-
-
-
 
 function fetchEmployeeName() {
     const urlParams = new URLSearchParams(window.location.search);
-    const forename = sessionStorage.getItem("firstname"); 
+    const forename = sessionStorage.getItem("firstname");
     const surname = sessionStorage.getItem("lastname");
 
     if (forename && surname) {
         document.getElementById('employee-name').textContent = `Timesheet for ${forename} ${surname}`;
     }
 }
-
-console.log(sessionStorage.getItem("firstname") + " " + sessionStorage.getItem("lastname") + " " + sessionStorage.getItem("employee_id"));
-
 
 async function fetchClients() {
     try {
@@ -36,21 +29,20 @@ async function fetchClients() {
         const clients = await clientsResponse.json();
         const hours = await hoursResponse.json();
 
-        console.log('Clients:', clients);
-        console.log('Hours:', hours);
-
         const tableBody = document.getElementById('client-rows');
         const tableHeader = document.querySelector('thead tr');
 
-        // Clear existing rows and headers
+        
         tableBody.innerHTML = '';
         tableHeader.innerHTML = '<th>Client Name</th>';
 
         // Prepare table header (dates for the week)
         const weekDates = getWeekDates(currentWeekStartDate);
-        weekDates.forEach(date => {
+        const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+        weekDates.forEach((date, index) => {
             const th = document.createElement('th');
-            th.textContent = getFormattedDate(date);
+            th.textContent = `${weekDays[index]} (${getFormattedDate(date)})`;
             tableHeader.appendChild(th);
         });
 
@@ -60,7 +52,7 @@ async function fetchClients() {
             row.innerHTML = `<td>${client.company_name}</td>`;
 
             weekDates.forEach(date => {
-                const formattedDate = formatDate(date); // Format current date for comparison
+                const formattedDate = formatDate(date); 
                 const matchingEntry = hours.find(
                     hour => hour.company_name === client.company_name && formatDate(hour.work_date) === formattedDate
                 );
@@ -70,26 +62,48 @@ async function fetchClients() {
 
             tableBody.appendChild(row);
         });
+
+        document.querySelectorAll('.day-input').forEach(input => {
+            input.addEventListener('input', validateHoursInput);
+        });
+
     } catch (error) {
         console.error('Error fetching data:', error);
     }
 }
 
+function validateHoursInput(event) {
+    const value = event.target.value;
+    
+    // Remove any non-numeric characters
+    event.target.value = value.replace(/[^0-9.]/g, '');
+    
+    // If the value is greater than 24, reset it to 24
+    if (parseFloat(event.target.value) > 24) {
+        event.target.value = '24';
+    }
+    
+    // If the value is an invalid number, reset it
+    if (event.target.value === '') {
+        event.target.value = '0';
+    }
+}
 
 function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD
 }
 
-
-
 function getWeekDates(startDate) {
     const weekDates = [];
-    const startOfWeek = startDate.getDate() - startDate.getDay() + 1;
+    const day = startDate.getDay();
+    const diff = (day === 0 ? -6 : 1) - day; // Sunday is 0, Monday is 1
+    const startOfWeek = new Date(startDate);
+    startOfWeek.setDate(startDate.getDate() + diff);
 
     for (let i = 0; i < 7; i++) {
-        const date = new Date(startDate);
-        date.setDate(startOfWeek + i);
+        const date = new Date(startOfWeek);
+        date.setDate(startOfWeek.getDate() + i);
         weekDates.push(date);
     }
 
@@ -137,7 +151,13 @@ async function submitTimesheet() {
         inputs.forEach((input) => {
             const date = input.getAttribute('data-date');
             const hours = input.value;
-            
+
+            // Validate hours before submission
+            if (hours !== '' && (isNaN(hours) || parseFloat(hours) < 0 || parseFloat(hours) > 24)) {
+                alert(`Invalid hours input for ${clientName} on ${date}. Please enter a value between 0 and 24.`);
+                return;
+            }
+
             if (hours) {
                 timesheetData.push({ clientName, date, hours, employee_id });
             }

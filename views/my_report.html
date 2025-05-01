@@ -54,15 +54,17 @@
   </select>
   
     <button class="gen-button" id="generateReport"> <i class="fa-solid fa-table-list"></i> Generate Report</button>
-    
-    <div clas="charts-container">
-      <h1 id="monthlyBreakdownH1">My Monthly Breakdown for Year </h1>
-    <span id ="monthlyBreakdownChart">
-    </span>
-    <h1 id="clientWorkBreakdownh1">My Client Breakdown for Year </h1>
-    <span id ="clietnWorkBreakdown">
-    </span>
+    <div class="charts-container">
+  <span class="monthlyBreakdownChart">
+    <h1 id="monthlyBreakdownH1">My Monthly Breakdown for Year</h1>
+    <canvas id="monthlyBreakdownCanvas"></canvas> 
+  </span>
+  <span class="clietnWorkBreakdown">
+    <h1 id="clientWorkBreakdownh1">My Client Breakdown for Year</h1>
+    <canvas id="clientWorkBreakdownCanvas"></canvas> 
+  </span>
 </div>
+
   
     <table id="individualReportTable">
       <thead>
@@ -95,7 +97,9 @@
           </thead>
           <tbody id="modalTableBody">
           </tbody>
+        </table>
           <button id="closeModal">Close</button>
+          <button id="downloadModal">Download</button>
 
       </div>
   </div>

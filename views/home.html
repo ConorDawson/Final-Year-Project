@@ -37,7 +37,11 @@
 
   <div class="reports_card">
     <h2 id="employee-name">Timesheet</h2>
+    <div class="button-container">
 
+    <button id="previous-week-button" class="submit" onclick="goToPreviousWeek()">Previous Week</button>
+        <button id="next-week-button" class="submit" onclick="goToNextWeek()">Next Week</button>
+        </div>
     <p id="user-info"></p>
 
    
@@ -53,7 +57,6 @@
         </tbody>
       </table>
 
-      <!-- Wrap buttons inside the button container -->
       <div class="button-container">
         <button id="previous-week-button" class="submit" onclick="goToPreviousWeek()">Previous Week</button>
         <button id="next-week-button" class="submit" onclick="goToNextWeek()">Next Week</button>

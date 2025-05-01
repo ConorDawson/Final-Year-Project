@@ -21,15 +21,11 @@ const pool = new Pool({
 
 app.get('/api/client_hours', async (req, res) => {
   try {
-    // Get start & end dates from frontend request
     const { start_date, end_date } = req.query;
-
-    // Call Flask API with the provided dates
     const response = await axios.get('http://localhost:5001/api/client_hours', {
       params: { start_date, end_date }
     });
-
-    res.json(response.data); // Send Flask response to frontend
+    res.json(response.data); 
   } catch (err) {
     console.error('Error fetching client hours from Flask:', err);
     res.status(500).send('Server Error');
@@ -44,11 +40,10 @@ app.get('/api/monthly_report', async (req, res) => {
   }
 
   try {
-    // Call the Flask API endpoint to get the monthly report
     const response = await axios.get('http://localhost:5001/api/monthly_report', {
-      params: { client, start_date, end_date } // Pass client, start_date, and end_date as query parameters
+      params: { client, start_date, end_date } 
     });
-    res.json(response.data); // Send Flask data back to the client
+    res.json(response.data); 
   } catch (err) {
     console.error('Error fetching monthly report from Flask:', err);
     res.status(500).send('Server Error');
@@ -56,20 +51,13 @@ app.get('/api/monthly_report', async (req, res) => {
 });
 
 
-
-
-
-
-// Session middleware
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false } // Set to true in production with HTTPS
+  cookie: { secure: false } 
 }));
 
-
-// Middleware for JSON and URL-encoded parsing
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -86,7 +74,6 @@ app.post('/login', async (req, res) => {
     return res.status(400).json({ error: "Email and password are required." });
   }
 
-  // XOR decryption function (same logic as Flask)
   const xorDecrypt = (cipherText, key = 5) => {
     return cipherText
       .split('')
@@ -144,13 +131,10 @@ app.post('/login', async (req, res) => {
 
 // Handle Logout (clear session)
 app.post('/logout', (req, res) => {
-  // Destroy the session
   req.session.destroy((err) => {
     if (err) {
       return res.status(500).send('Failed to logout');
     }
-
-    // Redirect to login page
     res.redirect('/');
   });
 });
@@ -164,7 +148,7 @@ app.post('/current', (req, res) => {
 });
 
 
-// Handle Current Graph Route
+// Handle Individual Graph Route
 app.post('/my_report', (req, res) => {
   if (!req.session.user) {
     return res.redirect('/');
@@ -172,6 +156,7 @@ app.post('/my_report', (req, res) => {
   res.sendFile(path.join(__dirname, 'views/my_report.html'));
 });
 
+// Handle Employee Reports Route
 app.post('/employee_reports', (req, res) => {
   if (!req.session.user) {
     return res.redirect('/');
@@ -199,7 +184,7 @@ app.post('/home', (req, res) => {
 
 
 
-// Home Route (after successful login)
+// Predicted Graph Route
 app.post('/predicted', (req, res) => {
   if (!req.session.user) {
     return res.redirect('/');
@@ -207,6 +192,7 @@ app.post('/predicted', (req, res) => {
   res.sendFile(path.join(__dirname, 'views/predicted_graphs.html'));
 });
 
+// Admin Route
 app.post('/admin', (req, res) => {
   if (!req.session.user) {
     return res.redirect('/');
@@ -214,14 +200,12 @@ app.post('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/admin/main_form/admin.html'));
 });
 
-
- 
 // Serve employee management pages
 app.post('/add_employee', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/admin/employee_functions/add_employee/add_employee.html'));
 });
 
-
+//add client
 app.post('/add_client', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/admin/client_functions/add_client.html'));
 });
@@ -233,9 +217,7 @@ function xorDecrypt(text, key = 5) {
     .join('');
 }
 
-
-
-
+//select all clients
 app.get('/api/clients', async (req, res) => {
   try {
     const result = await pool.query('SELECT company_name FROM clients');
@@ -251,7 +233,7 @@ app.get('/api/clients', async (req, res) => {
   }
 });
 
-
+//select all timesheet hours
 app.post('/api/timesheet-hours', async (req, res) => {
   const { employee_id } = req.body;
   try {
@@ -274,7 +256,7 @@ app.post('/api/timesheet-hours', async (req, res) => {
 });
 
 
-
+//submit timesheet
 app.post('/submitTimesheet', async (req, res) => {
   try {
       const response = await fetch('http://localhost:5001/submitTimesheet', {
@@ -296,7 +278,7 @@ app.post('/submitTimesheet', async (req, res) => {
   }
 });
 
-
+//add employee
 app.post('/add_new_employee', async (req, res) => {
   try {
     const { employee_forename, employee_surname, employee_email, employee_password, employee_wage, role } = req.body;
@@ -326,6 +308,7 @@ app.post('/add_new_employee', async (req, res) => {
   }
 });
 
+//get all employees
 app.get('/getAllEmployees', async (req, res) => {
   try {
     const response = await axios.get('http://localhost:5001/getAllEmployees');
@@ -336,6 +319,7 @@ app.get('/getAllEmployees', async (req, res) => {
   }
 }); 
 
+//update employee
 app.post('/update_employee', async (req, res) => {
   console.log('reached server.js');
   try {
@@ -366,6 +350,7 @@ app.post('/update_employee', async (req, res) => {
   }
 });
 
+//delete employee
 app.post('/delete_employee', async (req, res) => {
   console.log('reached /delete_employee');
   const { employee_id } = req.body;
@@ -389,7 +374,7 @@ app.post('/delete_employee', async (req, res) => {
   }
 });
 
-
+//get employee work years
 app.post('/getEmployeeWorkYears', async (req, res) => {
   const { employee_id } = req.body;
   try {
@@ -403,7 +388,7 @@ app.post('/getEmployeeWorkYears', async (req, res) => {
   }
 });
 
-
+//get employee yearly work
 app.post('/getEmployeeYearlyWork', async (req, res) => {
   const { employee_id, year } = req.body;
   try {
@@ -418,6 +403,7 @@ app.post('/getEmployeeYearlyWork', async (req, res) => {
   }
 }
 );
+
 
 app.post('/getMonthlyIndividualClients', async (req, res) => {
   const { employee_id, year, company_name } = req.body;
@@ -503,7 +489,6 @@ app.post('/add_new_client', async (req, res) => {
       client_billing_schedule
     } = req.body;
 
-    // Send the data to the backend (Flask or another server)
     const response = await axios.post('http://localhost:5001/add_new_client', {
       company_name, 
       contact_person, 
@@ -515,19 +500,15 @@ app.post('/add_new_client', async (req, res) => {
       client_billing_schedule
     });
 
-    // If the response status is 200, client was added successfully
     if (response.status === 200) {
       res.status(200).send('Client added successfully');
     } else {
-      // Log the error response from the backend for debugging
       console.log('Error response from Flask:', response.data);
       res.status(response.status).json({ message: response.data.message || 'Unknown error' });
     }
   } catch (err) {
-    // Catch and log any errors
     console.error('Error adding new client:', err);
     if (err.response) {
-      // Log the error response from the backend (Flask)
       console.error('Error response from Flask:', err.response.data);
       res.status(err.response.status).json({ message: err.response.data.message || 'Error from Flask' });
     } else {
@@ -553,7 +534,6 @@ app.post('/update_client', async (req, res) => {
       client_billing_schedule 
     } = req.body;
 
-    // Send data to Flask backend for processing
     const response = await axios.post('http://localhost:5001/update_client', {
       client_id, 
       company_name, 
@@ -569,16 +549,15 @@ app.post('/update_client', async (req, res) => {
     if (response.status === 200) {
       res.status(200).send('Client updated successfully');
     } else {
-      console.log('Error response from Flask:', response.data); // Log error for debugging
+      console.log('Error response from Flask:', response.data); 
       res.status(response.status).json({ message: response.data.message || 'Unknown error' });
     }
   } catch (err) {
     console.error('Error updating client:', err);
     if (err.response) {
-      console.error('Error response from Flask:', err.response.data); // Log error from Flask
+      console.error('Error response from Flask:', err.response.data); 
       res.status(err.response.status).json({ message: err.response.data.message || 'Error from Flask' });
     } else {
-      // If no response from Flask, it's a server error on Express side
       res.status(500).send('Server Error');
     }
   }
@@ -639,14 +618,14 @@ app.post('/getEmployeeInfo', async (req, res) => {
 
 app.post('/predicted_reports', async (req, res) => {
   try {
-    const response = await axios.post('http://localhost:5001/predicted_reports', req.body);
+    const response = await axios.post('http://localhost:5001/predicted_reports', req.body); // Pass req.body
     res.json(response.data);
-  }
-catch (err) {
+  } catch (err) {
     console.error('Error fetching predicted reports:', err);
     res.status(500).send('Server Error');
   }
 });
+
 
 app.post('/getClientPaySchedules', async (req, res) => {
   try {

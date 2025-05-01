@@ -12,7 +12,7 @@ window.onload = async function () {
         console.log("Employee work years:", years.work_years);
 
         const yearSelect = document.getElementById('select_year');
-        yearSelect.innerHTML = ""; // Clear previous options
+        yearSelect.innerHTML = ""; 
 
         for (let year of years.work_years) {
             const yearOption = document.createElement('option');
@@ -33,8 +33,7 @@ window.onload = async function () {
    
 
     document.getElementById("reportHeading").innerHTML = forename + " " + surname + " - My Work Breakdown " + Year;
-// Event listener for generating the report
-document.getElementById("generateReport").addEventListener("click", async function () {
+    document.getElementById("generateReport").addEventListener("click", async function () {
     document.getElementById("reportHeading").innerHTML = "";
     const selectedYear = document.getElementById("select_year").value;
     const employee_id = sessionStorage.getItem("employee_id");
@@ -50,7 +49,6 @@ document.getElementById("generateReport").addEventListener("click", async functi
 
     if (reportData && reportData.client_hours) {
         console.log("Report Data:", reportData);
-        // Generate the table with the data
         generateReportTable(reportData.client_hours);
     } else {
         console.error("Failed to generate report.");
@@ -61,6 +59,52 @@ document.getElementById("generateReport").addEventListener("click", async functi
 });
    
     
+document.getElementById("downloadReport").addEventListener("click", function () {
+    const table = document.getElementById("individualReportTableBody");
+    const rows = table.getElementsByTagName("tr");
+
+    let csvContent = "Client Name,Total Hours\n"; 
+
+    
+    Array.from(rows).forEach((row) => {
+        const cells = row.getElementsByTagName("td");
+        let rowData = [];
+        Array.from(cells).forEach((cell) => {
+            rowData.push(cell.textContent.trim());
+        });
+        csvContent += rowData.join(",") + "\n"; 
+    });
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "work_report.csv";  
+    link.click();  
+});
+
+document.getElementById("downloadModal").addEventListener("click", function () {
+    const modalTable = document.getElementById("modalTableBody");
+    const rows = modalTable.getElementsByTagName("tr");
+
+    let csvContent = "Month,Hours\n"; 
+
+    Array.from(rows).forEach((row) => {
+        const cells = row.getElementsByTagName("td");
+        let rowData = [];
+        Array.from(cells).forEach((cell) => {
+            rowData.push(cell.textContent.trim());
+        });
+        csvContent += rowData.join(",") + "\n"; 
+    });
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "monthly_breakdown.csv";  
+    link.click();  
+});
+
+
 };
 
 getEmployeeWorkYears = async () => {
@@ -94,130 +138,106 @@ getEmployeeYearlyWork = async (year) => {
 
 function generateReportTable(clientHours) {
     const tableBody = document.getElementById("individualReportTableBody");
-    tableBody.innerHTML = '';  // Clear any previous data
+    tableBody.innerHTML = '';  
 
-    let totalHoursSum = 0;  // Variable to hold the total sum of hours
+    let totalHoursSum = 0;  
 
-    // Loop through client_hours array and populate the table
     clientHours.forEach(([clientName, totalHours]) => {
-        // Convert totalHours to a number to ensure accurate addition
         totalHours = parseFloat(totalHours);
 
-        // Create a new row
         const row = document.createElement('tr');
 
-        // Create and append client name cell
         const clientCell = document.createElement('td');
         clientCell.textContent = clientName;
         row.appendChild(clientCell);
 
-        // Create and append total hours cell
         const hoursCell = document.createElement('td');
-        hoursCell.textContent = totalHours.toFixed(2);  // Format as a number with two decimal places
+        hoursCell.textContent = totalHours.toFixed(2); 
         row.appendChild(hoursCell);
 
-        // Create and append detail breakdown cell with button and icon
         const detailCell = document.createElement('td');
         const detailButton = document.createElement('button');
-        detailButton.classList.add('detailButton'); // Add the 'detailButton' class
-        detailButton.setAttribute('data-client', clientName); // Set client name in data-client
-        detailButton.setAttribute('data-start-date', '2025-01-01'); // Example, set actual date as needed
-        detailButton.setAttribute('data-end-date', '2025-12-31'); // Example, set actual date as needed
+        detailButton.classList.add('detailButton'); 
+        detailButton.setAttribute('data-client', clientName); 
+        detailButton.setAttribute('data-start-date', '2025-01-01'); 
+        detailButton.setAttribute('data-end-date', '2025-12-31'); 
 
         // Create icon element
         const icon = document.createElement('i');
-        icon.classList.add('fa-solid', 'fa-circle-info'); // Add icon classes
+        icon.classList.add('fa-solid', 'fa-circle-info'); 
 
-        // Append icon to button
         detailButton.appendChild(icon);
 
-        // Append button to detail cell
         detailCell.appendChild(detailButton);
 
-        // Append detail cell to row
         row.appendChild(detailCell);
 
-        // Append the row to the table body
         tableBody.appendChild(row);
 
-        // Add the total hours for this client to the sum
         totalHoursSum += totalHours;
 
         detailButton.addEventListener('click', function() {
-            const client = detailButton.getAttribute('data-client');  // Get client from the button's data-client attribute
-            getMonthlyIndividualClients(client);  // Call the function with the client as an argument
+            const client = detailButton.getAttribute('data-client');  
+            getMonthlyIndividualClients(client);  
         });
     });
 
-    // Create a new row for the total
     const totalRow = document.createElement('tr');
     
-    // Create and append empty cell for client name (leave it blank)
     const totalClientCell = document.createElement('td');
     totalClientCell.textContent = 'Total';
-    totalClientCell.style.fontWeight = 'bold';  // Make it bold for the total row
+    totalClientCell.style.fontWeight = 'bold';  
     totalRow.appendChild(totalClientCell);
 
-    // Create and append total hours cell
     const totalHoursCell = document.createElement('td');
-    totalHoursCell.textContent = totalHoursSum.toFixed(2);  // Display the total sum of hours, formatted
-    totalHoursCell.style.fontWeight = 'bold';  // Make it bold for the total row
+    totalHoursCell.textContent = totalHoursSum.toFixed(2);  
+    totalHoursCell.style.fontWeight = 'bold';  
     totalRow.appendChild(totalHoursCell);
 
-    // Append an empty cell for the detail button in the total row
     const emptyCell = document.createElement('td');
     totalRow.appendChild(emptyCell);
 
-    // Append the total row to the table body
     tableBody.appendChild(totalRow);
 }
 
 
 function generateMonthlyReportTable(response) {
-    // Access the 'monthly_report' array from the response object
     const monthlyData = response.monthly_report;
 
     const modalTableBody = document.getElementById("modalTableBody");
-    modalTableBody.innerHTML = ''; // Clear any existing rows
+    modalTableBody.innerHTML = ''; 
 
     // Populate the table with data
     monthlyData.forEach((data) => {
         const row = document.createElement('tr');
         
-        // Create and append the month cell
         const monthCell = document.createElement('td');
         monthCell.textContent = data.month; 
         row.appendChild(monthCell);
         
-        // Create and append the hours worked cell
         const hoursCell = document.createElement('td');
         hoursCell.textContent = data.total_hours; 
         row.appendChild(hoursCell);
         
-        // Append the row to the modal table
         modalTableBody.appendChild(row);
     });
 
-    // Set the modal title
     const modalTitle = document.getElementById("modalTitle");
     modalTitle.textContent = "Monthly Report"; 
 
-    // Show the modal by changing its display to 'block'
     const modal = document.getElementById("t");
     modal.style.display = "block"; 
 }
 
-// Event listener to close the modal when the button is clicked
 document.getElementById("closeModal").addEventListener("click", function() {
     const modal = document.getElementById("t");
-    modal.style.display = "none"; // Hide the modal
+    modal.style.display = "none"; 
 });
 
-// Optional: Close the modal when clicking outside of the modal
 window.addEventListener("click", function(event) {
     const modal = document.getElementById("t");
     if (event.target === modal) {
-        modal.style.display = "none"; // Hide the modal when clicking outside
+        modal.style.display = "none"; 
     }
 });
 
@@ -256,7 +276,7 @@ function getFullMonthlyWork() {
         year
     }).then((response) => {
         console.log('getFullMonthlyWork', response.data);
-        const monthlyChartData = response.data.monthly_chart; // Access the monthly_chart array
+        const monthlyChartData = response.data.monthly_chart; 
         console.log('monthlyChartData', monthlyChartData);
         createLineChart(monthlyChartData);
 
@@ -265,24 +285,24 @@ function getFullMonthlyWork() {
         alert('Error fetching monthly chart clients. Please try again.');
     });
 }
-
+let lineChartInstance = null;  
 
 function createLineChart(monthlyChartData) {
-    // Prepare data for Chart.js
     const labels = monthlyChartData.map(item => item.month);
     const totalHours = monthlyChartData.map(item => parseFloat(item.total_hours));
 
-    // Create a new canvas element
-    document.getElementById("monthlyBreakdownChart").innerHTML = "<canvas id='monthlyChart'></canvas>";
-    year = document.getElementById("select_year").value;
+    const year = document.getElementById("select_year").value;
+    document.getElementById("monthlyBreakdownH1").textContent = "Monthly Work Breakdown for " + year;
 
-    document.getElementById("monthlyBreakdownH1").textContent = "Monthly Work Breakdow for  " + year;
+    const ctx = document.getElementById('monthlyBreakdownCanvas').getContext('2d');
 
-    // Get the context of the canvas element we just created
-    const ctx = document.getElementById('monthlyChart').getContext('2d');
+    // If a chart already exists, destroy it before creating a new one
+    if (lineChartInstance) {
+        lineChartInstance.destroy();  
+    }
 
     // Create the line chart
-    new Chart(ctx, {
+    lineChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
@@ -305,7 +325,7 @@ function createLineChart(monthlyChartData) {
         }
     });
 
-    createPieChart();
+    createPieChart();  
 }
 
 async function createPieChart() {
@@ -318,20 +338,19 @@ async function createPieChart() {
             year
         });
         console.log(response.data);
-        const chartData = response.data.client_hours; // Access the client_hours array
+        const chartData = response.data.client_hours; 
 
-        // Extract client names and hours from the response data
         const clientNames = chartData.map(item => item[0]);
         const totalHours = chartData.map(item => parseFloat(item[1]));
 
-        // Create a new canvas element
-        document.getElementById("clietnWorkBreakdown").innerHTML = "<canvas id='clientPieChart'></canvas>";
+        const ctx = document.getElementById('clientWorkBreakdownCanvas').getContext('2d');
 
-        // Get the context of the canvas element we just created
-        const ctx = document.getElementById('clientPieChart').getContext('2d');
+        if (window.myPieChart) {
+            window.myPieChart.destroy();
+        }
 
         // Create the pie chart
-        new Chart(ctx, {
+        window.myPieChart = new Chart(ctx, {
             type: 'pie',
             data: {
                 labels: clientNames,
@@ -365,6 +384,7 @@ async function createPieChart() {
         alert('Error fetching employee yearly work. Please try again.');
     }
 }
+
 
 
 

@@ -4,6 +4,8 @@ from datetime import datetime
 from collections import defaultdict
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 import numpy as np
 
 ENCRYPTION_KEY = 5
@@ -12,7 +14,7 @@ app = Flask(__name__)
 def xor_decrypt(cipher_text):
     return ''.join(chr(ord(char) ^ ENCRYPTION_KEY) for char in cipher_text)
 
-def get_employee_client_hours_with_wages():
+def get_employee_client_hours_with_wages(num_months):
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -58,8 +60,11 @@ def get_employee_client_hours_with_wages():
             grouped_data[company][emp_id][month_key]["hours"] += float(hours)
             grouped_data[company][emp_id][month_key]["cost"] += wage_float * float(hours)
 
-    result = []
+    # Prepare global training data
+    X_all = []
+    y_all = []
 
+    employee_month_data = defaultdict(list)
     for company, employees in grouped_data.items():
         for emp_id, months in employees.items():
             df = pd.DataFrame([
@@ -70,7 +75,7 @@ def get_employee_client_hours_with_wages():
             df = df.sort_values("Month")
 
             if len(df) < 3:
-                continue  # Not enough data
+                continue
 
             df["MonthIndex"] = (df["Month"] - df["Month"].min()).dt.days // 30
             df["MonthNum"] = df["Month"].dt.month
@@ -82,43 +87,70 @@ def get_employee_client_hours_with_wages():
             if len(df) < 3:
                 continue
 
-            X = df[["MonthIndex", "MonthNum", "Quarter", "Lag_1", "Lag_2"]]
-            y = df["Hours"]
+            X_emp = df[["MonthIndex", "MonthNum", "Quarter", "Lag_1", "Lag_2"]].values
+            y_emp = df["Hours"].values
 
-            model = RandomForestRegressor(n_estimators=100, random_state=42)
-            model.fit(X, y)
+            X_all.extend(X_emp)
+            y_all.extend(y_emp)
+            employee_month_data[emp_id].append((df, company))
 
-            predictions = []
+    if len(X_all) == 0:
+        return jsonify({"error": "Not enough data to train the model."})
+
+    # Train global model
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X_all)
+    y_all = np.array(y_all)
+
+    model = RandomForestRegressor(n_estimators=100, random_state=42)
+    model.fit(X_scaled, y_all)
+
+    # Evaluate global model
+    y_pred = model.predict(X_scaled)
+    r2 = r2_score(y_all, y_pred)
+    mae = mean_absolute_error(y_all, y_pred)
+    rmse = np.sqrt(mean_squared_error(y_all, y_pred))
+
+    print(f"Model Evaluation:")
+    print(f"  R² Score: {r2:.4f}")
+    print(f"  MAE: {mae:.2f}")
+    print(f"  RMSE: {rmse:.2f}")
+
+    # Generate predictions for each employee
+    result = []
+
+    for emp_id, data_list in employee_month_data.items():
+        for df, company in data_list:
+            last_month = df["Month"].max()
+            last_index = df["MonthIndex"].max()
             current_lag1 = df.iloc[-1]["Hours"]
             current_lag2 = df.iloc[-2]["Hours"]
-            last_index = df["MonthIndex"].max()
-            last_month = df["Month"].max()
 
-            for i in range(1, 13):
+            wage_float = latest_wage_per_employee.get(emp_id, 0.0)
+
+            for i in range(1, num_months + 1):
                 future_index = last_index + i
                 future_month = last_month + pd.DateOffset(months=i)
                 month_num = future_month.month
                 quarter = (month_num - 1) // 3 + 1
 
                 input_features = [[future_index, month_num, quarter, current_lag1, current_lag2]]
-                pred = model.predict(input_features)[0]
-                predictions.append((future_month.strftime("%Y-%m"), pred))
+                input_scaled = scaler.transform(input_features)
+
+                pred = model.predict(input_scaled)[0]
+                result.append({
+                    "Client": company,
+                    "Employee ID": emp_id,
+                    "Month": future_month.strftime("%Y-%m"),
+                    "Total Hours Worked": round(pred, 2),
+                    "Total Cost (£)": round(pred * wage_float, 2)
+                })
 
                 current_lag2 = current_lag1
                 current_lag1 = pred
 
-            wage_float = latest_wage_per_employee.get(emp_id, 0.0)
-
-            for month_str, pred_hours in predictions:
-                result.append({
-                    "Client": company,
-                    "Employee ID": emp_id,
-                    "Month": month_str,
-                    "Total Hours Worked": round(pred_hours, 2),
-                    "Total Cost (£)": round(pred_hours * wage_float, 2)
-                })
-
     return result
+
 
 if __name__ == "__main__":
     app.run(debug=True)

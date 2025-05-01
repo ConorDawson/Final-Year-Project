@@ -1,13 +1,13 @@
 window.onload = function () {
     console.log('add_employee.js loaded');
     
-    const form = document.getElementById("addEmployee"); // Select the form
-    console.log(form); // Check if form is selected
+    const form = document.getElementById("addEmployee");
+    console.log(form); 
 
     if (form) {
         form.addEventListener("submit", async function (event) {
             console.log("Form submitted");
-            event.preventDefault(); // Prevent default form submission
+            event.preventDefault(); 
 
             // Collect form data
             const employeeForename = document.getElementById("forname").value.trim();
@@ -51,7 +51,6 @@ window.onload = function () {
             console.log(employeeData); // Debugging: Check the employeeData
 
             try {
-                // Send data to the server using fetch
                 const response = await fetch('/add_new_employee', {
                     method: 'POST',
                     headers: {

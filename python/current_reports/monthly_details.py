@@ -7,16 +7,12 @@ import os
 # Encryption key
 ENCRYPTION_KEY = 5
 
-# XOR encryption/decryption functions
 def xor_encrypt(text):
     return ''.join(chr(ord(char) ^ ENCRYPTION_KEY) for char in text)
 
 def xor_decrypt(cipher_text):
     return ''.join(chr(ord(char) ^ ENCRYPTION_KEY) for char in cipher_text)
 
-# Database connection information
-import psycopg2
-from flask import Flask, jsonify, request
 
 # Database connection information
 DB_CONFIG = {
@@ -27,8 +23,6 @@ DB_CONFIG = {
     "database":  "postgres"
 }
 
-# Encryption key for XOR cipher
-ENCRYPTION_KEY = 5
 
 app = Flask(__name__)
 
@@ -94,7 +88,7 @@ def fetch_monthly_report(client, start_date, end_date):
                 end_dt = end_date if isinstance(end_date, datetime) else datetime.strptime(end_date, "%Y-%m-%d")
 
                 for month_year, total_hours, total_cost, client_payment, billing_schedule in rows:
-                    payments_per_year = 12  # Default yearly
+                    payments_per_year = 12  
 
                     if billing_schedule == 'BA':
                         payments_per_year = 6
