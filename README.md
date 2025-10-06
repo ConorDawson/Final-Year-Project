@@ -117,3 +117,7 @@ This project successfully demonstrates that **predictive cost analysis**, when i
 Although real-world implementation requires large, consistent datasets and ongoing refinement, this prototype proves that machine learning models like **Random Forest Regressors** can provide actionable insights that help businesses optimize their operations and profitability.
 
 ---
+
+## Author
+**Conor Dawson**  
+BSc (Hons) in Software Development 
