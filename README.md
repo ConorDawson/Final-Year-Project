@@ -54,7 +54,7 @@ The **Random Forest Regressor** was ultimately selected due to its:
 
 ---
 
-## ⚙️ Technologies Used
+## Technologies Used
 
 | Category | Technology | Purpose |
 |-----------|-------------|----------|
