@@ -1,6 +1,6 @@
 # Predictive Client Profitability and Resource Management System
 
-## 📘 Overview
+## Overview
 This project explores how **predictive analytics** can enhance **client profitability assessment** and **resource allocation** for businesses that rely on time-based client servicing.  
 The system uses **machine learning models**, specifically a **Random Forest Regressor**, to forecast future resource requirements based on historical timesheet and profitability data.  
 
@@ -8,7 +8,7 @@ The goal is to provide a tool that allows businesses to identify low-profit clie
 
 ---
 
-## 🎯 Project Objective
+## Project Objective
 To determine whether predictive cost analysis — when combined with employee timesheet tracking — can:
 - Improve the accuracy of client profitability assessments  
 - Enhance business decision-making for resource management  
@@ -16,7 +16,7 @@ To determine whether predictive cost analysis — when combined with employee ti
 
 ---
 
-## 🧠 Reasoning and Methodology
+## Reasoning and Methodology
 
 ### 1. Data-Driven Profit Analysis
 Traditional client profit analysis methods are largely **manual** and **reactive**, often identifying unprofitable clients after the loss has already occurred.  
@@ -35,7 +35,7 @@ The **Random Forest Regressor** was ultimately selected due to its:
 
 ---
 
-## 🧩 System Architecture
+## System Architecture
 
 ### 1. Core Components
 - **Frontend:** React.js (for building an intuitive interface and visualization of profit/loss data)
@@ -67,16 +67,16 @@ The **Random Forest Regressor** was ultimately selected due to its:
 
 ---
 
-## 🔍 Key Features
-- 📈 **Profit Prediction:** Uses Random Forest regression to predict client profitability.  
-- ⏱️ **Resource Forecasting:** Estimates future employee hour requirements per client.  
-- 🧾 **Dynamic Reporting:** Generates customizable visual reports for meetings or management.  
-- 🔐 **Data Integration:** Pulls timesheet data directly into predictive workflows.  
-- 🧠 **Feature Importance Insights:** Highlights which client attributes most affect profitability.  
+## Key Features
+- **Profit Prediction:** Uses Random Forest regression to predict client profitability.  
+- **Resource Forecasting:** Estimates future employee hour requirements per client.  
+- **Dynamic Reporting:** Generates customizable visual reports for meetings or management.  
+- **Data Integration:** Pulls timesheet data directly into predictive workflows.  
+- **Feature Importance Insights:** Highlights which client attributes most affect profitability.  
 
 ---
 
-## 🧮 Machine Learning Process
+## Machine Learning Process
 
 1. **Data Preprocessing:**  
    - Cleaned and normalized timesheet and client profitability data.  
@@ -95,7 +95,7 @@ The **Random Forest Regressor** was ultimately selected due to its:
 
 ---
 
-## 🧠 Lessons Learned & Reasoning
+## Lessons Learned & Reasoning
 
 - **Data Quality Is Crucial:** The model’s accuracy heavily depends on consistent, complete, and clean data.  
 - **Balance Between Accuracy and Performance:** Random Forest provided reliable results without heavy computational cost.  
@@ -104,7 +104,7 @@ The **Random Forest Regressor** was ultimately selected due to its:
 
 ---
 
-## 🧭 Future Improvements
+## Future Improvements
 - Implement role-based user authentication for administrators.  
 - Add predictive breakdowns at the employee level.  
 - Integrate real-time data synchronization from external systems (e.g., CRM or payroll).  
@@ -112,7 +112,7 @@ The **Random Forest Regressor** was ultimately selected due to its:
 
 ---
 
-## 📜 Conclusion
+## Conclusion
 This project successfully demonstrates that **predictive cost analysis**, when integrated with **employee timesheet tracking**, can significantly improve **profitability forecasting** and **resource management**.  
 Although real-world implementation requires large, consistent datasets and ongoing refinement, this prototype proves that machine learning models like **Random Forest Regressors** can provide actionable insights that help businesses optimize their operations and profitability.
 
